@@ -188,6 +188,20 @@ public class HDF5ImageJ
     }
   }
 
+  static float[] loadScale(IHDF5Reader reader, String dsetName){
+    float[] element_size_um = new float[3];
+    try{
+      element_size_um = reader.float32().getArrayAttr(dsetName, "element_size_um");
+    } catch (HDF5Exception err){
+      // try loading from an alternate location
+      // IDES files don't have depth info, so off by 1:
+      element_size_um[1] = reader.float32().read("/original/ImageData/Calibrations/Dimension/0/Scale");
+      element_size_um[2] = reader.float32().read("/original/ImageData/Calibrations/Dimension/1/Scale");
+    }
+
+    return element_size_um;
+  }
+
   static ImagePlus loadDataSetsToHyperStack( String filename, String[] dsetNames,
                                              int nFrames, int nChannels)
   {
@@ -220,7 +234,7 @@ public class HDF5ImageJ
       float[] element_size_um = {1, 1, 1};
       try
       {
-        element_size_um = reader.float32().getArrayAttr(dsetName, "element_size_um");
+        element_size_um = loadScale(reader, dsetName);
       } catch (HDF5Exception err)
       {
         IJ.log("Warning: Can't read attribute 'element_size_um' from file '" + filename
@@ -326,7 +340,7 @@ public class HDF5ImageJ
           HDF5DataSetInformation dsInfo = reader.object().getDataSetInformation(dsetName);
           float[] element_size_um = {1,1,1};
           try {
-            element_size_um = reader.float32().getArrayAttr(dsetName, "element_size_um");
+            element_size_um = loadScale(reader, dsetName);
           }
           catch (HDF5Exception err) {
             IJ.log("Warning: Can't read attribute 'element_size_um' from file '" + filename
@@ -534,7 +548,7 @@ public class HDF5ImageJ
       HDF5DataSetInformation dsInfo = reader.object().getDataSetInformation(dsetName);
       float[] element_size_um = {1,1,1};
       try {
-        element_size_um = reader.float32().getArrayAttr(dsetName, "element_size_um");
+        element_size_um = loadScale(reader, dsetName);
       }
       catch (HDF5Exception err) {
         IJ.log("Warning: Can't read attribute 'element_size_um' from file '" + filename
@@ -646,7 +660,7 @@ public class HDF5ImageJ
       HDF5DataSetInformation dsInfo = reader.object().getDataSetInformation(dsetName);
       float[] element_size_um = {1,1,1};
       try {
-        element_size_um = reader.float32().getArrayAttr(dsetName, "element_size_um");
+        element_size_um = loadScale(reader, dsetName);
       }
       catch (HDF5Exception err) {
         IJ.log("Warning: Can't read attribute 'element_size_um' from file '" + filename
